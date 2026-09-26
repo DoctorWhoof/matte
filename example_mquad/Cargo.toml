@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 matte =  { path = "../" }
-macroquad = "0.4.13"
+macroquad = "0.4.16"

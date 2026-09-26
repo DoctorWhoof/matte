@@ -1,7 +1,26 @@
+use macroquad::miniquad::conf::{AppleGfxApi, Platform};
 use macroquad::prelude::*;
 use matte::{Align::*, Edge::*, Fitting, Frame, Num, Rect};
 
-#[macroquad::main("Frame Layout")]
+// Uses Metal on macOS, since OpenGL flickers while resizing.
+// Pass "opengl" as the first argument to use OpenGL instead.
+fn window_conf() -> Conf {
+    let apple_gfx_api = if std::env::args().nth(1).as_deref() == Some("opengl") {
+        AppleGfxApi::OpenGl
+    } else {
+        AppleGfxApi::Metal
+    };
+    Conf {
+        window_title: "Frame Layout".to_owned(),
+        platform: Platform {
+            apple_gfx_api,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     let mut scale: f32 = 1.0;
 
@@ -77,7 +96,7 @@ async fn main() {
             // Buttons
             for n in 0..20 {
                 pane.push_edge(Top, 30.0, |button| {
-                // pane.push_size(TopLeft, 200.0, 30.0, |button| {
+                    // pane.push_size(TopLeft, 200.0, 30.0, |button| {
                     let text = if button.rect().h > 16.0 {
                         format!("button {}", n)
                     } else {
@@ -98,7 +117,7 @@ async fn main() {
             draw_rect(&pane.rect(), [88, 88, 88, 255], "right pane");
             // Buttons
             let count = 20;
-            let split_h = pane.divide_height(count);// / pane.get_scale();
+            let split_h = pane.divide_height(count); // / pane.get_scale();
             for n in 0..count {
                 pane.push_edge(Top, split_h, |button| {
                     let text = format!("resizable button {}", n + 1);
