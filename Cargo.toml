@@ -4,6 +4,9 @@ version = "0.4.0"
 edition = "2024"
 description = "Minimalist GUI Layout. Zero dependencies, allocation free"
 license = "MIT"
+repository = "https://github.com/DoctorWhoof/matte"
+readme = "readme.md"
+exclude = [".github/", ".gitignore", "screenshots/"]
 
 # "cargo run -p example"
 [workspace]
