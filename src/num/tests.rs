@@ -94,57 +94,6 @@ fn test_accumulated_rounding_bias() {
 }
 
 #[test]
-fn test_from_usize_checked() {
-    // Test successful conversions within range
-    assert_eq!(u8::from_usize_checked(255), Some(255u8));
-    assert_eq!(u8::from_usize_checked(0), Some(0u8));
-    assert_eq!(u8::from_usize_checked(128), Some(128u8));
-
-    assert_eq!(u16::from_usize_checked(65535), Some(65535u16));
-    assert_eq!(u16::from_usize_checked(0), Some(0u16));
-    assert_eq!(u16::from_usize_checked(32768), Some(32768u16));
-
-    assert_eq!(i8::from_usize_checked(127), Some(127i8));
-    assert_eq!(i8::from_usize_checked(0), Some(0i8));
-    assert_eq!(i8::from_usize_checked(64), Some(64i8));
-
-    assert_eq!(i16::from_usize_checked(32767), Some(32767i16));
-    assert_eq!(i16::from_usize_checked(0), Some(0i16));
-    assert_eq!(i16::from_usize_checked(16384), Some(16384i16));
-
-    // Test failed conversions when value is too large
-    assert_eq!(u8::from_usize_checked(256), None);
-    assert_eq!(u8::from_usize_checked(1000), None);
-    assert_eq!(u8::from_usize_checked(usize::MAX), None);
-
-    assert_eq!(u16::from_usize_checked(65536), None);
-    assert_eq!(u16::from_usize_checked(100000), None);
-
-    assert_eq!(i8::from_usize_checked(128), None);
-    assert_eq!(i8::from_usize_checked(256), None);
-
-    assert_eq!(i16::from_usize_checked(32768), None);
-    assert_eq!(i16::from_usize_checked(65536), None);
-
-    // Test float conversions (always succeed)
-    assert_eq!(f32::from_usize_checked(0), Some(0.0f32));
-    assert_eq!(f32::from_usize_checked(1000000), Some(1000000.0f32));
-    assert_eq!(f32::from_usize_checked(usize::MAX), Some(usize::MAX as f32));
-
-    assert_eq!(f64::from_usize_checked(0), Some(0.0f64));
-    assert_eq!(f64::from_usize_checked(1000000), Some(1000000.0f64));
-    assert_eq!(f64::from_usize_checked(usize::MAX), Some(usize::MAX as f64));
-
-    // Test larger integer types
-    assert_eq!(u32::from_usize_checked(4294967295), Some(4294967295u32));
-    assert_eq!(i32::from_usize_checked(2147483647), Some(2147483647i32));
-
-    // Platform-dependent types
-    assert_eq!(usize::from_usize_checked(1000), Some(1000usize));
-    assert_eq!(isize::from_usize_checked(1000), Some(1000isize));
-}
-
-#[test]
 fn test_float_unary_negation() {
     // Test that Float trait supports unary negation
     fn negate_float<T: Float>(value: T) -> T {
@@ -165,7 +114,7 @@ fn test_float_unary_negation() {
     fn compute_with_negation<T: Float>(x: T, y: T) -> T {
         let neg_x = -x;
         let neg_y = -y;
-        neg_x + neg_y + T::one()
+        neg_x + neg_y + T::ONE
     }
 
     assert_eq!(compute_with_negation(2.0f32, 3.0f32), -4.0f32);
@@ -189,18 +138,23 @@ fn test_float_mathematical_functions() {
     assert_eq!(3.5f32.round(), 4.0);
     assert_eq!((-3.5f64).round(), -4.0);
 
-    // Test exp - e^x
-    let e = 2.718281828f32;
-    assert!((1.0f32.exp() - e).abs() < 0.00001);
-    assert!((0.0f64.exp() - 1.0).abs() < 0.000001);
-
     // Test in generic context
-    fn test_generic_math<T: Float>(x: T) -> (T, T, T, T) {
-        (x.floor(), x.ceil(), x.round(), x.exp())
+    fn test_generic_math<T: Float>(x: T) -> (T, T, T) {
+        (x.floor(), x.ceil(), x.round())
     }
 
-    let (f, c, r, _) = test_generic_math(3.7f32);
+    let (f, c, r) = test_generic_math(3.7f32);
     assert_eq!(f, 3.0);
     assert_eq!(c, 4.0);
     assert_eq!(r, 4.0);
+}
+
+#[test]
+fn test_saturation() {
+    // Out-of-range values clamp to the type's limits, NaN becomes 0
+    assert_eq!(u8::from_f32(300.0), u8::MAX);
+    assert_eq!(i8::from_f32(-300.0), i8::MIN);
+    assert_eq!(i16::from_f32(f32::INFINITY), i16::MAX);
+    assert_eq!(u32::from_f32(f32::NAN), 0);
+    assert_eq!(i32::from_f32(f32::NAN), 0);
 }

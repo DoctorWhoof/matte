@@ -20,7 +20,7 @@ It also does not know in advance the size of the children, so you may need to do
 
 To evenly divide a frame into columns and rows, you can use the [Frame::divide_width()] and [Frame::divide_height()] functions to obtain the desired width and height of each child frame taking gaps and margin into account.
 
-![LayframeScreenshot](screenshots/screenshot.png)
+![Matte screenshot](screenshots/screenshot.png)
 
 Three examples are provided:
 

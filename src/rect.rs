@@ -1,5 +1,5 @@
 use crate::{
-    num::{Float, Num, SignedNum},
+    num::{Float, Num, Signed},
     vec2::Vec2,
 };
 use core::ops::{Add, Mul, Sub};
@@ -92,7 +92,7 @@ where
 
     pub fn bottom_center(&self) -> Vec2<T> {
         Vec2 {
-            x: self.x + self.w / T::two(),
+            x: self.x + self.w / T::TWO,
             y: self.y + self.h,
         }
     }
@@ -100,15 +100,14 @@ where
     pub fn right_center(&self) -> Vec2<T> {
         Vec2 {
             x: self.x + self.w,
-            y: self.y + self.h / T::two(),
+            y: self.y + self.h / T::TWO,
         }
     }
 
     pub fn center(&self) -> Vec2<T> {
-        let two: T = T::one() + T::one();
         Vec2 {
-            x: self.x + (self.w / two),
-            y: self.y + (self.h / two),
+            x: self.x + self.w / T::TWO,
+            y: self.y + self.h / T::TWO,
         }
     }
 
@@ -167,26 +166,26 @@ where
     }
 
     pub fn shrink(self, margin: T) -> Self {
-        if margin == T::zero() {
+        if margin == T::ZERO {
             return self;
         }
         Self {
             x: self.x + margin,
             y: self.y + margin,
-            w: T::get_max(self.w - (margin * T::two()), T::zero()),
-            h: T::get_max(self.h - (margin * T::two()), T::zero()),
+            w: T::get_max(self.w - (margin * T::TWO), T::ZERO),
+            h: T::get_max(self.h - (margin * T::TWO), T::ZERO),
         }
     }
 
     pub fn expand(self, margin: T) -> Self {
-        if margin == T::zero() {
+        if margin == T::ZERO {
             return self;
         }
         Self {
             x: self.x - margin,
             y: self.y - margin,
-            w: self.w + margin * T::two(),
-            h: self.h + margin * T::two(),
+            w: self.w + margin * T::TWO,
+            h: self.h + margin * T::TWO,
         }
     }
 
@@ -247,13 +246,10 @@ where
 
 impl<T> Rect<T>
 where
-    T: SignedNum,
+    T: Signed,
 {
-    pub fn sweep_x(self, delta: T) -> Rect<T>
-    where
-        T: SignedNum,
-    {
-        if delta > T::zero() {
+    pub fn sweep_x(self, delta: T) -> Rect<T> {
+        if delta > T::ZERO {
             Rect {
                 w: self.w + delta,
                 ..self
@@ -267,11 +263,8 @@ where
         }
     }
 
-    pub fn sweep_y(self, delta: T) -> Rect<T>
-    where
-        T: SignedNum,
-    {
-        if delta > T::zero() {
+    pub fn sweep_y(self, delta: T) -> Rect<T> {
+        if delta > T::ZERO {
             Rect {
                 h: self.h + delta,
                 ..self

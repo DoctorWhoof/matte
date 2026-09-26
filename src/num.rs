@@ -1,75 +1,80 @@
-//! Numeric traits and implementations for the math crate.
-pub mod float;
-pub mod integer;
-pub mod num;
-pub mod signed_num;
+//! Numeric traits for generic types like `Rect<T>` and `Frame<T>`.
+//! `Num` accepts any primitive number; `Signed`, `Integer` and `Float`
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[cfg(test)]
-pub mod tests;
+mod tests;
 
-// Re-export the main traits
-pub use float::{Float, FloatBasic, FloatTrig};
-pub use integer::Integer;
-pub use num::Num;
-pub use signed_num::SignedNum;
+/// Base trait for all primitive integer and float types.
+pub trait Num:
+    Copy
+    + Default
+    + PartialEq
+    + PartialOrd
+    + Add<Output = Self>
+    + Sub<Output = Self>
+    + Mul<Output = Self>
+    + Div<Output = Self>
+    + AddAssign
+    + SubAssign
+    + MulAssign
+    + DivAssign
+{
+    const ZERO: Self;
+    const ONE: Self;
+    const TWO: Self;
 
-/// Implements Num for unsigned integer types
-macro_rules! impl_uint_num {
-    ($t:ty) => {
+    /// Converts from f32. Integers round half to even and saturate at their limits.
+    fn from_f32(value: f32) -> Self;
+
+    fn to_f32(self) -> f32;
+
+    /// Not named `max`, which would clash with `Ord::max` on integers.
+    #[inline(always)]
+    fn get_max(self, other: Self) -> Self {
+        if self > other { self } else { other }
+    }
+
+    /// Not named `min`, which would clash with `Ord::min` on integers.
+    #[inline(always)]
+    fn get_min(self, other: Self) -> Self {
+        if self < other { self } else { other }
+    }
+}
+
+/// Numbers that can be negated: signed integers and floats.
+pub trait Signed: Num + Neg<Output = Self> {}
+
+/// Integer types only, signed or unsigned.
+pub trait Integer: Num {}
+
+/// Float types only, with the float math used by `Rect` and `Vec2`.
+pub trait Float: Signed {
+    const EPSILON: Self;
+    const PI: Self;
+
+    fn floor(self) -> Self;
+    fn ceil(self) -> Self;
+    fn round(self) -> Self;
+    fn abs(self) -> Self;
+    fn sqrt(self) -> Self;
+    fn powi(self, n: i32) -> Self;
+    fn sin(self) -> Self;
+    fn cos(self) -> Self;
+    fn atan2(self, other: Self) -> Self;
+}
+
+macro_rules! impl_int {
+    ($($t:ty),*) => {$(
         impl Num for $t {
-            #[inline(always)]
-            fn zero() -> Self {
-                0
-            }
-
-            #[inline(always)]
-            fn one() -> Self {
-                1
-            }
-
-            #[inline(always)]
-            fn two() -> Self {
-                2
-            }
-
-            #[inline(always)]
-            fn four() -> Self {
-                4
-            }
-
-            #[inline(always)]
-            fn from_usize_checked(value: usize) -> Option<Self> {
-                if value <= Self::MAX as usize { Some(value as Self) } else { None }
-            }
-
-            #[inline(always)]
-            fn get_max(self, b: Self) -> Self {
-                if self > b { self } else { b }
-            }
-
-            #[inline(always)]
-            fn get_min(self, b: Self) -> Self {
-                if self < b { self } else { b }
-            }
-
-            #[inline(always)]
-            fn saturating_sub(self, rhs: Self) -> Self {
-                self.saturating_sub(rhs)
-            }
-
-            #[inline(always)]
-            fn saturating_add(self, rhs: Self) -> Self {
-                self.saturating_add(rhs)
-            }
+            const ZERO: Self = 0;
+            const ONE: Self = 1;
+            const TWO: Self = 2;
 
             #[inline(always)]
             fn from_f32(value: f32) -> Self {
-                if value < 0.0 {
-                    0
-                } else {
-                    let rounded = value.round_ties_even();
-                    if rounded > Self::MAX as f32 { Self::MAX } else { rounded as Self }
-                }
+                // `as` saturates at the type's limits and turns NaN into 0
+                value.round_ties_even() as Self
             }
 
             #[inline(always)]
@@ -77,126 +82,17 @@ macro_rules! impl_uint_num {
                 self as f32
             }
         }
-    };
+
+        impl Integer for $t {}
+    )*};
 }
 
-/// Implements Num for signed integer types
-macro_rules! impl_sint_num {
-    ($t:ty) => {
+macro_rules! impl_float {
+    ($($t:ident),*) => {$(
         impl Num for $t {
-            #[inline(always)]
-            fn zero() -> Self {
-                0
-            }
-
-            #[inline(always)]
-            fn one() -> Self {
-                1
-            }
-
-            #[inline(always)]
-            fn two() -> Self {
-                2
-            }
-
-            #[inline(always)]
-            fn four() -> Self {
-                4
-            }
-
-            #[inline(always)]
-            fn from_usize_checked(value: usize) -> Option<Self> {
-                if value <= Self::MAX as usize { Some(value as Self) } else { None }
-            }
-
-            #[inline(always)]
-            fn get_max(self, b: Self) -> Self {
-                if self > b { self } else { b }
-            }
-
-            #[inline(always)]
-            fn get_min(self, b: Self) -> Self {
-                if self < b { self } else { b }
-            }
-
-            #[inline(always)]
-            fn saturating_sub(self, rhs: Self) -> Self {
-                self.saturating_sub(rhs)
-            }
-
-            #[inline(always)]
-            fn saturating_add(self, rhs: Self) -> Self {
-                self.saturating_add(rhs)
-            }
-
-            #[inline(always)]
-            fn from_f32(value: f32) -> Self {
-                let rounded = value.round_ties_even();
-                if rounded > Self::MAX as f32 {
-                    Self::MAX
-                } else if rounded < Self::MIN as f32 {
-                    Self::MIN
-                } else {
-                    rounded as Self
-                }
-            }
-
-            #[inline(always)]
-            fn to_f32(self) -> f32 {
-                self as f32
-            }
-        }
-    };
-}
-
-/// Implements Num for floating-point types
-macro_rules! impl_float_num {
-    ($t:ty) => {
-        impl Num for $t {
-            #[inline(always)]
-            fn zero() -> Self {
-                0.0
-            }
-
-            #[inline(always)]
-            fn one() -> Self {
-                1.0
-            }
-
-            #[inline(always)]
-            fn two() -> Self {
-                2.0
-            }
-
-            #[inline(always)]
-            fn four() -> Self {
-                4.0
-            }
-
-            #[inline(always)]
-            fn from_usize_checked(value: usize) -> Option<Self> {
-                Some(value as Self)
-            }
-
-            #[inline(always)]
-            fn get_max(self, b: Self) -> Self {
-                if self > b { self } else { b }
-            }
-
-            #[inline(always)]
-            fn get_min(self, b: Self) -> Self {
-                if self < b { self } else { b }
-            }
-
-            #[inline(always)]
-            fn saturating_sub(self, rhs: Self) -> Self {
-                self - rhs
-            }
-
-            #[inline(always)]
-            fn saturating_add(self, rhs: Self) -> Self {
-                self + rhs
-            }
+            const ZERO: Self = 0.0;
+            const ONE: Self = 1.0;
+            const TWO: Self = 2.0;
 
             #[inline(always)]
             fn from_f32(value: f32) -> Self {
@@ -208,180 +104,66 @@ macro_rules! impl_float_num {
                 self as f32
             }
         }
-    };
+
+        impl Signed for $t {}
+
+        impl Float for $t {
+            const EPSILON: Self = $t::EPSILON;
+            const PI: Self = core::$t::consts::PI;
+
+            #[inline(always)]
+            fn floor(self) -> Self {
+                $t::floor(self)
+            }
+
+            #[inline(always)]
+            fn ceil(self) -> Self {
+                $t::ceil(self)
+            }
+
+            #[inline(always)]
+            fn round(self) -> Self {
+                $t::round(self)
+            }
+
+            #[inline(always)]
+            fn abs(self) -> Self {
+                $t::abs(self)
+            }
+
+            #[inline(always)]
+            fn sqrt(self) -> Self {
+                $t::sqrt(self)
+            }
+
+            #[inline(always)]
+            fn powi(self, n: i32) -> Self {
+                $t::powi(self, n)
+            }
+
+            #[inline(always)]
+            fn sin(self) -> Self {
+                $t::sin(self)
+            }
+
+            #[inline(always)]
+            fn cos(self) -> Self {
+                $t::cos(self)
+            }
+
+            #[inline(always)]
+            fn atan2(self, other: Self) -> Self {
+                $t::atan2(self, other)
+            }
+        }
+    )*};
 }
 
-// Implement Num for all unsigned integer types
-impl_uint_num!(u8);
-impl_uint_num!(u16);
-impl_uint_num!(u32);
-impl_uint_num!(u64);
-impl_uint_num!(usize);
+impl_int!(u8, u16, u32, u64, usize, i8, i16, i32, i64, isize);
+impl_float!(f32, f64);
 
-// Implement Num for all signed integer types
-impl_sint_num!(i8);
-impl_sint_num!(i16);
-impl_sint_num!(i32);
-impl_sint_num!(i64);
-impl_sint_num!(isize);
-
-// Implement Num for floating point types
-impl_float_num!(f32);
-impl_float_num!(f64);
-
-// Implement SignedNum for signed integer types
-impl SignedNum for i8 {}
-impl SignedNum for i16 {}
-impl SignedNum for i32 {}
-impl SignedNum for i64 {}
-impl SignedNum for isize {}
-
-// Implement SignedNum for floating point types
-impl SignedNum for f32 {}
-impl SignedNum for f64 {}
-
-// Implement Integer for both signed and unsigned integer types
-impl Integer for i8 {}
-impl Integer for i16 {}
-impl Integer for i32 {}
-impl Integer for i64 {}
-impl Integer for isize {}
-impl Integer for u8 {}
-impl Integer for u16 {}
-impl Integer for u32 {}
-impl Integer for u64 {}
-impl Integer for usize {}
-
-// Implement FloatBasic trait for floating point types
-impl FloatBasic for f32 {
-    #[inline(always)]
-    fn floor(self) -> Self {
-        f32::floor(self)
-    }
-
-    #[inline(always)]
-    fn ceil(self) -> Self {
-        f32::ceil(self)
-    }
-
-    #[inline(always)]
-    fn round(self) -> Self {
-        f32::round(self)
-    }
-
-    #[inline(always)]
-    fn abs(self) -> Self {
-        f32::abs(self)
-    }
-
-    #[inline(always)]
-    fn sqrt(self) -> Self {
-        f32::sqrt(self)
-    }
-
-    #[inline(always)]
-    fn powi(self, exp: i32) -> Self {
-        f32::powi(self, exp)
-    }
-
-    #[inline(always)]
-    fn epsilon() -> Self {
-        f32::EPSILON
-    }
-}
-
-impl FloatBasic for f64 {
-    #[inline(always)]
-    fn floor(self) -> Self {
-        f64::floor(self)
-    }
-
-    #[inline(always)]
-    fn ceil(self) -> Self {
-        f64::ceil(self)
-    }
-
-    #[inline(always)]
-    fn round(self) -> Self {
-        f64::round(self)
-    }
-
-    #[inline(always)]
-    fn abs(self) -> Self {
-        f64::abs(self)
-    }
-
-    #[inline(always)]
-    fn sqrt(self) -> Self {
-        f64::sqrt(self)
-    }
-
-    #[inline(always)]
-    fn powi(self, exp: i32) -> Self {
-        f64::powi(self, exp)
-    }
-
-    #[inline(always)]
-    fn epsilon() -> Self {
-        f64::EPSILON
-    }
-}
-
-// Implement FloatTrig trait for floating point types
-impl FloatTrig for f32 {
-    #[inline(always)]
-    fn sin(self) -> Self {
-        f32::sin(self)
-    }
-
-    #[inline(always)]
-    fn cos(self) -> Self {
-        f32::cos(self)
-    }
-
-    #[inline(always)]
-    fn atan2(self, other: Self) -> Self {
-        f32::atan2(self, other)
-    }
-
-    #[inline(always)]
-    fn exp(self) -> Self {
-        f32::exp(self)
-    }
-
-    #[inline(always)]
-    fn pi() -> Self {
-        core::f32::consts::PI
-    }
-}
-
-impl FloatTrig for f64 {
-    #[inline(always)]
-    fn sin(self) -> Self {
-        f64::sin(self)
-    }
-
-    #[inline(always)]
-    fn cos(self) -> Self {
-        f64::cos(self)
-    }
-
-    #[inline(always)]
-    fn atan2(self, other: Self) -> Self {
-        f64::atan2(self, other)
-    }
-
-    #[inline(always)]
-    fn exp(self) -> Self {
-        f64::exp(self)
-    }
-
-    #[inline(always)]
-    fn pi() -> Self {
-        core::f64::consts::PI
-    }
-}
-
-// Implement Float trait for floating point types (empty, just combines both traits)
-impl Float for f32 {}
-impl Float for f64 {}
+impl Signed for i8 {}
+impl Signed for i16 {}
+impl Signed for i32 {}
+impl Signed for i64 {}
+impl Signed for isize {}

@@ -5,7 +5,7 @@ mod rect;
 pub use rect::*;
 
 mod num;
-pub use num::{Float, Integer, Num, SignedNum};
+pub use num::{Float, Integer, Num, Signed};
 
 mod vec2;
 pub use vec2::*;

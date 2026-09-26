@@ -9,7 +9,7 @@ async fn main() {
         let (width, height) = (screen_width(), screen_height());
 
         // Drawing helper function. Converts Rect types between
-        // tato_layout's and macroquad's, then draws it.
+        // matte's and macroquad's, then draws it.
         fn draw_rect(rect: &Rect<f32>, thickness: f32) {
             let rect = macroquad::math::Rect::new(rect.x, rect.y, rect.w, rect.h);
             draw_rectangle_lines(rect.x, rect.y, rect.w, rect.h, thickness, BLACK);

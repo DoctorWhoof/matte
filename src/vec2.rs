@@ -1,6 +1,9 @@
-use crate::{Num, SignedNum, num::Float};
+use crate::{Num, Signed, num::Float};
 
 mod ops;
+
+#[cfg(test)]
+mod tests;
 
 /// A generic 2D vector.
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
@@ -26,8 +29,8 @@ where
 
     pub fn zero() -> Self {
         Self {
-            x: T::zero(),
-            y: T::zero(),
+            x: T::ZERO,
+            y: T::ZERO,
         }
     }
 
@@ -48,33 +51,33 @@ where
 
 impl<T> Vec2<T>
 where
-    T: SignedNum,
+    T: Signed,
 {
     pub fn up() -> Self {
         Self {
-            x: T::zero(),
-            y: -T::one(),
+            x: T::ZERO,
+            y: -T::ONE,
         }
     }
 
     pub fn down() -> Self {
         Self {
-            x: T::zero(),
-            y: T::one(),
+            x: T::ZERO,
+            y: T::ONE,
         }
     }
 
     pub fn left() -> Self {
         Self {
-            x: -T::one(),
-            y: T::zero(),
+            x: -T::ONE,
+            y: T::ZERO,
         }
     }
 
     pub fn right() -> Self {
         Self {
-            x: T::one(),
-            y: T::zero(),
+            x: T::ONE,
+            y: T::ZERO,
         }
     }
 }
@@ -84,7 +87,7 @@ where
     T: Float,
 {
     pub fn is_longer_than_zero(&self) -> bool {
-        self.x.abs() > T::zero() || self.y.abs() > T::zero()
+        self.x.abs() > T::ZERO || self.y.abs() > T::ZERO
     }
 
     pub fn floor(&self) -> Self {
@@ -114,7 +117,7 @@ where
 
     pub fn normalize(&self) -> Self {
         let len = self.len();
-        if len > T::epsilon() {
+        if len > T::EPSILON {
             Vec2 {
                 x: self.x / len,
                 y: self.y / len,
@@ -126,8 +129,8 @@ where
 
     pub fn average(&self, other: &Self) -> Self {
         Self {
-            x: (self.x + other.x) / T::two(),
-            y: (self.y + other.y) / T::two(),
+            x: (self.x + other.x) / T::TWO,
+            y: (self.y + other.y) / T::TWO,
         }
     }
 
@@ -145,8 +148,8 @@ where
     pub fn reflect(v: Self, n: Self) -> Self {
         let dot_product = v.x * n.x + v.y * n.y;
         Vec2 {
-            x: v.x - T::two() * dot_product * n.x,
-            y: v.y - T::two() * dot_product * n.y,
+            x: v.x - T::TWO * dot_product * n.x,
+            y: v.y - T::TWO * dot_product * n.y,
         }
     }
 }
@@ -159,8 +162,8 @@ where
         let dx = other.x - self.x;
         let dy = other.y - self.y;
         let angle = dy.atan2(dx);
-        if angle < T::zero() {
-            angle + T::two() * T::pi()
+        if angle < T::ZERO {
+            angle + T::TWO * T::PI
         } else {
             angle
         }
@@ -168,7 +171,7 @@ where
 
     pub fn clamp_to_length(&mut self, max_length: T) {
         let current_length = self.len();
-        if current_length > max_length && current_length > T::epsilon() {
+        if current_length > max_length && current_length > T::EPSILON {
             let normalized = self.normalize();
             self.x = normalized.x * max_length;
             self.y = normalized.y * max_length;
