@@ -1,3 +1,12 @@
-/target
-.DS_Store
+target
 Cargo.lock
+**/*.rs.bk
+
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+.zed/
+*.swp

@@ -1,11 +1,12 @@
-# Tato Layout
+# Matte
 
 **_WARNING: Under heavy development, API changes constantly._**
 ------------------------------------------------------------------------
 
-A minimalist **_immediate mode_**, **_no_std_** and **_no allocations_** layout library for rectangular elements (Frames), intended for games, embedded systems, and other constrained environments. **Tato Layout does not perform any rendering**, it simply lays out nested rectangles (Frames) with margins and gaps between children.
+A minimalist **_immediate mode_** and **_no allocations_** layout library for rectangular elements (Frames), intended for games, embedded systems, and other constrained environments. **Matte does not perform any rendering**, it simply lays out nested rectangles (Frames) with margins and gaps between children.
 
 While easy to use, this approach is very limited and can't create complex layouts! There are a few key functions to work with:
+
 - [Frame::push_edge()] inserts a new frame by pushing any edge inwards by a certain amount
 - [Frame::push_size()] to add elements with specific dimensions (with automatic scaling)
 - [Frame::place()] for arbitrary positioning
@@ -13,7 +14,7 @@ While easy to use, this approach is very limited and can't create complex layout
 
 For instance, repeatedly pushing a new Frame from the same edge is analogous to using a "Row" or "Column" in a more complex GUI library.
 
-It does not have any knowledge of fancy things like *rendering* and *input*. Instead, it provides you with closures that are aware of their parent Frame's rectangle and available space, and you do the rendering and input yourself.
+It does not have any knowledge of fancy things like _rendering_ and _input_. Instead, it provides you with closures that are aware of their parent Frame's rectangle and available space, and you do the rendering and input yourself.
 
 It also does not know in advance the size of the children, so you may need to do the math yourself within the closure before adding children, although this is planned to be easier in the future. You can use the [Frame::cursor()] method to check the available space after margin is applied, or [Frame::rect()] to get the closure's rectangle.
 
@@ -22,14 +23,15 @@ To evenly divide a frame into columns and rows, you can use the [Frame::divide_w
 ![LayframeScreenshot](screenshots/screenshot.png)
 
 Three examples are provided:
-- *example_basic*, A very simple example using Macroquad for rect rendering.
-- *example_mquad*, a more complex layout using Macroquad with text and adjustable zoom.
-- *example_sdl*, which uses SDL2 (via the mini_sdl crate).
+
+- _example_basic_, A very simple example using Macroquad for rect rendering.
+- _example_mquad_, a more complex layout using Macroquad with text and adjustable zoom.
+- _example_sdl_, which uses SDL2 (via the mini_sdl crate).
 
 ## Usage Example
 
 ```rust
-use tato_layout::{Frame, Rect, Fitting, Edge::*, Align::*};
+use matte::{Frame, Rect, Fitting, Edge::*, Align::*};
 
 fn main() {
     // Create a root frame
@@ -81,24 +83,3 @@ fn main() {
     });
 }
 ```
-
-## Features
-
-- **Immediate Mode**: Simple and direct with minimal setup.
-- **No Standard Library Dependencies**: Works in embedded environments with `no_std`
-- **Nested Layouts**: Create hierarchical frame structures
-- **Flexible Positioning**: Add child frames to any side (left, right, top, bottom)
-- **Margin & Gap Control**: Fine-tune spacing between elements with `set_margin()` and `set_gap()`
-- **Adaptive Sizing**: Calculate proportional sizes with `divide_width()` and `divide_height()`
-- **Adaptive Scaling**: Automatically scale elements to fit available space with aspect ratio preservation
-- **Smart Fitting**: Multiple strategies for handling elements that exceed available space:
-  - `Relaxed`: Allows overflow
-  - `Aggressive`: Removes elements that exceed boundaries
-  - `Clamp`: Resizes elements to fit available space
-  - `Scale`: Scales elements to fit while preserving aspect ratio
-- **Alignment Control**: Position elements precisely with various alignment options
-- **Precise Placement**: Position elements at exact coordinates with `place()`
-- **Scaling Support**: Adjust all elements with a scale factor using `set_scale()`
-- **Generic Numeric Support**: Works with various numeric types (u16, f32, etc.)
-
-## License

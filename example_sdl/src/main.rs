@@ -1,4 +1,4 @@
-use tato_layout::{Edge::*, Frame, math::Rect};
+use matte::{Edge::*, Frame, Rect};
 
 fn main() -> Result<(), String> {
     let mut app = mini_sdl::App::new(
@@ -10,7 +10,9 @@ fn main() -> Result<(), String> {
         None,
     )?;
 
-    let mut font = app.font_load("example_sdl/src/classic-display.ttf", 16)?;
+    let working_dir = std::env::current_dir().unwrap();
+    let font_path = working_dir.join("example_sdl/src/classic-display.ttf");
+    let mut font = app.font_load(font_path.to_str().unwrap(), 16)?;
 
     while !app.quit_requested {
         // Init frame

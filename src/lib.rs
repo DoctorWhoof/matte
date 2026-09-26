@@ -1,11 +1,14 @@
-#![no_std]
 #![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/readme.md"))]
-
 use core::marker::PhantomData;
-use tato_math::{num::Num, rect::Rect};
 
-/// Math utilities
-pub use tato_math as math;
+mod rect;
+pub use rect::*;
+
+mod num;
+pub use num::{Float, Integer, Num, SignedNum};
+
+mod vec2;
+pub use vec2::*;
 
 /// Shortens signature for a mutable frame reference
 macro_rules! child {
@@ -159,7 +162,9 @@ where
     /// taking into account the size of the gaps between each column.
     /// The number of columns stays consistent regardless of scale.
     pub fn divide_width(&self, columns: u32) -> T {
-        if columns <= 1 { return T::from_f32(self.cursor.w) }
+        if columns <= 1 {
+            return T::from_f32(self.cursor.w);
+        }
         let unscaled_gap = self.gap * (columns - 1) as f32;
         let available_width = (self.cursor.w / self.scale) - unscaled_gap;
         let size = available_width / columns as f32;
@@ -170,7 +175,9 @@ where
     /// taking into account the size of the gaps between each row.
     /// The number of rows stays consistent regardless of scale.
     pub fn divide_height(&self, rows: u32) -> T {
-        if rows <= 1 { return T::from_f32(self.cursor.h) }
+        if rows <= 1 {
+            return T::from_f32(self.cursor.h);
+        }
         let unscaled_gap = self.gap * (rows - 1) as f32;
         let available_height = (self.cursor.h / self.scale) - unscaled_gap;
         let size = available_height / rows as f32;
@@ -222,10 +229,7 @@ where
             Align::BottomRight => ((self.cursor.w - w).max(0.0), 0.0),
 
             // Center alignment
-            Align::Center => (
-                (self.cursor.w - w) / 2.0,
-                (self.cursor.h - h) / 2.0,
-            ),
+            Align::Center => ((self.cursor.w - w) / 2.0, (self.cursor.h - h) / 2.0),
         };
 
         // Ensure offsets are non-negative

@@ -1,15 +1,10 @@
 [package]
-name = "tato_layout"
-version = "0.3.3"
+name = "matte"
+version = "0.4.0"
 edition = "2024"
-description = "Minimalist and allocation free GUI Layout"
+description = "Minimalist GUI Layout. Zero dependencies, allocation free"
 license = "MIT"
-repository = "https://github.com/DoctorWhoof/tato_layout"
-documentation = "https://docs.rs/tato_layout/latest/tato_layout/"
-categories = ["no-std"]
 
+# "cargo run -p example"
 [workspace]
 members = ["example_basic", "example_mquad", "example_sdl"]
-
-[dependencies]
-tato_math = { path = "../tato_math" }

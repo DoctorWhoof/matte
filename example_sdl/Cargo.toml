@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 mini_sdl = {version = "0.3.91", features = ["ttf"]}
-tato_layout =  { path = "../" }
+matte =  { path = "../" }
