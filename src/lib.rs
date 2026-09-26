@@ -17,26 +17,7 @@ macro_rules! child {
     };
 }
 
-/// A layout frame that manages rectangular areas with margins and scaling.
-/// A frame consists of an outer rectangle, an inner cursor rectangle (available space),
-/// and properties that control how child frames are created and positioned.
-#[derive(Debug, Clone)]
-pub struct Frame<T> {
-    /// The outer rectangle defining the frame boundaries (f32 internally)
-    rect: Rect<f32>,
-    /// Inner rectangle representing available space (f32 internally)
-    cursor: Rect<f32>,
-    /// Scaling factor for dimensions
-    scale: f32,
-    /// Margin size between frames (f32 internally)
-    margin: f32,
-    /// Gap between each child frame (f32 internally)
-    gap: f32,
-    /// Controls how children rects are culled when they exceed available space
-    pub fitting: Fitting,
-    /// Phantom data to retain type parameter T
-    _phantom: PhantomData<T>,
-}
+// ------------------------------ Helper structs ------------------------------
 
 /// Represents the side of a frame where a child frame can be added.
 #[derive(Debug, Clone, Copy, Default)]
@@ -87,6 +68,29 @@ pub enum Fitting {
     Clamp,
     /// Scales the child frame to fit available space while preserving aspect ratio.
     Scale,
+}
+
+// ------------------------------- Main struct -------------------------------
+
+/// A layout frame that manages rectangular areas with margins and scaling.
+/// A frame consists of an outer rectangle, an inner cursor rectangle (available space),
+/// and properties that control how child frames are created and positioned.
+#[derive(Debug, Clone)]
+pub struct Frame<T> {
+    /// The outer rectangle defining the frame boundaries (f32 internally)
+    rect: Rect<f32>,
+    /// Inner rectangle representing available space (f32 internally)
+    cursor: Rect<f32>,
+    /// Scaling factor for dimensions
+    scale: f32,
+    /// Margin size between frames (f32 internally)
+    margin: f32,
+    /// Gap between each child frame (f32 internally)
+    gap: f32,
+    /// Controls how children rects are culled when they exceed available space
+    pub fitting: Fitting,
+    /// Phantom data to retain type parameter T
+    _phantom: PhantomData<T>,
 }
 
 impl<T> Frame<T>
